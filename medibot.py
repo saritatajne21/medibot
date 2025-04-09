@@ -105,9 +105,19 @@ def apply_custom_css():
 def get_vectorstore():
     """Load the vector store with caching for efficiency"""
     try:
+        # Force CPU usage for FAISS
+        import faiss
+        faiss.omp_set_num_threads(1)  # Limit thread usage
+        
         embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
         if os.path.exists(DB_FAISS_PATH):
-            db = FAISS.load_local(DB_FAISS_PATH, embedding_model, allow_dangerous_deserialization=True)
+            # Explicitly specify CPU index
+            db = FAISS.load_local(
+                DB_FAISS_PATH, 
+                embedding_model, 
+                allow_dangerous_deserialization=True,
+                index_name="index"
+            )
             return db
         else:
             st.error(f"Vector store not found at {DB_FAISS_PATH}. Please run create_memory_for_llm.py first.")
@@ -115,7 +125,7 @@ def get_vectorstore():
     except Exception as e:
         st.error(f"Error loading vector store: {str(e)}")
         return None
-
+        
 def set_custom_prompt(custom_prompt_template):
     """Create a prompt template for the LLM"""
     prompt = PromptTemplate(template=custom_prompt_template, input_variables=["context", "question"])
