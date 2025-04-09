@@ -11,3 +11,12 @@ pywin32-ctypes==0.2.3
 setuptools==78.0.2
 wrapt==1.17.2
 faiss-cpu==1.7.4
+langchain==0.1.12
+langchain-community==0.0.27
+langchain-huggingface==0.0.4
+streamlit==1.32.0
+huggingface-hub==0.22.2
+pypdf==4.1.0
+pikepdf==9.5.2
+pillow==11.1.0
+python-dotenv==1.0.0
