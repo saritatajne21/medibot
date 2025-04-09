@@ -105,18 +105,17 @@ def apply_custom_css():
 def get_vectorstore():
     """Load the vector store with caching for efficiency"""
     try:
-        # Force CPU usage for FAISS
-        import faiss
-        faiss.omp_set_num_threads(1)  # Limit thread usage
+        # Force CPU environment variables
+        os.environ["FAISS_NO_AVX2"] = "1"  # Disable AVX2 instructions
+        os.environ["OMP_NUM_THREADS"] = "1"  # Limit OpenMP threads
         
         embedding_model = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL_NAME)
         if os.path.exists(DB_FAISS_PATH):
-            # Explicitly specify CPU index
+            # Use allow_dangerous_deserialization and explicitly specify CPU usage
             db = FAISS.load_local(
                 DB_FAISS_PATH, 
                 embedding_model, 
-                allow_dangerous_deserialization=True,
-                index_name="index"
+                allow_dangerous_deserialization=True
             )
             return db
         else:
@@ -124,6 +123,9 @@ def get_vectorstore():
             return None
     except Exception as e:
         st.error(f"Error loading vector store: {str(e)}")
+        # Log more detailed error information
+        import traceback
+        st.error(f"Detailed error: {traceback.format_exc()}")
         return None
         
 def set_custom_prompt(custom_prompt_template):
